@@ -3,6 +3,8 @@
     public class VkBotConfig
     {
         private static readonly VkBotConfig config;
+        private string accessToken;
+        private ulong groupId;
 
         static VkBotConfig()
         {
@@ -20,7 +22,5 @@
             groupId = 210785287;
         }
 
-        private string accessToken;
-        private ulong groupId;
     }
 }
