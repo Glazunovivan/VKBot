@@ -2,15 +2,13 @@
 
 namespace ParserTimetable
 {
-    public class Program
+    public class ParserTimetable
     {
         private static Timetable timetable;
 
-        static void Main(string[] args)
+        public static void Main()
         {
-            Console.WriteLine("Парсер");
-            Start();
-            Console.ReadLine();
+
         }
 
         public static void Start()
@@ -22,14 +20,19 @@ namespace ParserTimetable
             Console.WriteLine("Парсер работает :)");
         }
 
-        public static string ShowTimetableOfDay(int day)
+        public static string ShowTimetableOfDay(System.DateTime dateTime)
         {
             if (timetable == null)
             {
                 Start();
             }
 
-            return timetable.GetDayWithLessons(day);
+            return timetable.GetLessons(dateTime);
+        }
+
+        public static string ShowNextLesson(System.DateTime time)
+        {
+            return timetable.GetNextLesson(time);
         }
     }
 }

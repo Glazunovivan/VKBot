@@ -13,7 +13,6 @@
 
         public string AccessToken => accessToken;
         public ulong GroupId => groupId;
-
         public static VkBotConfig Instance => config;
 
         private VkBotConfig()

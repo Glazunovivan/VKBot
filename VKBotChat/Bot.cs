@@ -45,61 +45,14 @@ namespace VkBotChat
             currentTs = longPollServerResponse.Ts;
         }
 
-        private void CreateKeyboard()
-        {
-            messageKeyboard = new MessageKeyboard();
-            messageKeyboard.Inline = false;
-            messageKeyboard.OneTime = false;
-
-            messageKeyboard.Buttons = new List<List<MessageKeyboardButton>>()
-            {
-                new List<MessageKeyboardButton>()   //1я строка
-                {   
-                    new MessageKeyboardButton()
-                    {
-                        Action = new MessageKeyboardButtonAction()
-                        {
-                            Type =  KeyboardButtonActionType.Callback,
-                            Label="Показать расписание на сегодня"
-                        }
-                        
-                    },
-                },
-                
-                new List<MessageKeyboardButton>()   //2я строка
-                {
-                    new MessageKeyboardButton()
-                    {
-                        Action = new MessageKeyboardButtonAction()
-                        {
-                            Type =  KeyboardButtonActionType.OpenLink,
-                            Label="Перейти в e-learning",
-                            Link = new Uri("https://e-learning.mgupp.ru/login/index.php")
-                        }
-                    }
-                }
-            };
-        }
-
         public void Start(Action<GroupUpdate> onMessage = null)
         {
+            Console.WriteLine("Запуск бота...");
             CreateKeyboard();
 
-            if (onMessage != null)
-            {
-                OnMessage += OnMessage;
-            }
-            else
-            {
-                OnMessage += MessageKeyboard;
-            }
+            OnMessage += SendMessageChatGroup;
 
             new Thread(OnUpdate).Start();
-        }
-
-        private void MessageKeyboard(GroupUpdate e)
-        {
-            SendMessageChatGroup(e.Message.PeerId, "Keyboard", messageKeyboard);
         }
 
         /// <summary>
@@ -108,53 +61,236 @@ namespace VkBotChat
         /// <param name="chatId"></param>
         /// <param name="text"></param>
         /// <param name="keyboard"></param>
-        private void SendMessageChatGroup(long? chatId, string text, MessageKeyboard keyboard = null)
+        /// 
+        //private void SendMessageChatGroup(long? chatId, MessageKeyboard keyboard = null)
+        //{
+        //    var msg = new MessagesSendParams()
+        //    {
+        //        RandomId = Guid.NewGuid().GetHashCode(),
+        //        PeerId = chatId,
+        //        Message = "Чота"
+        //    };
+
+        //    if (keyboard != null)
+        //    {
+        //        msg.Keyboard = keyboard;
+        //    }
+
+        //    vkClient.Messages.Send(msg);
+        //}
+
+        private void SendMessageChatGroup(GroupUpdate e)
         {
-            var msg = new MessagesSendParams()
+            MessagesSendParams msg = new MessagesSendParams();
+
+            msg = new MessagesSendParams()
             {
                 RandomId = Guid.NewGuid().GetHashCode(),
-                PeerId = chatId,
-                Message = text
+                PeerId = e.Message.PeerId,
+                Keyboard = messageKeyboard
             };
 
-            if (keyboard != null)
+            switch (e?.Message?.Text)
             {
-                msg.Keyboard = keyboard;
+                case "кнопки":
+                    msg.Message = "Включаю кнопки";
+                    msg.Keyboard = messageKeyboard;
+                    break;
+                default:
+                    return;
             }
 
             vkClient.Messages.Send(msg);
         }
 
-        private void OnUpdate()
+        private async void OnUpdate()
         {
             while (true)
             {
-                var res = vkClient.Groups.GetBotsLongPollHistory(
+                var longPoll = vkClient.Groups.GetBotsLongPollHistory(
                     new BotsLongPollHistoryParams()
                     {
-                        Key = longPollServerResponse.Key,
                         Ts = currentTs,
+                        Key = longPollServerResponse.Key,
                         Server = longPollServerResponse.Server
-                    });
+                    }
+                    );
 
                 if (OnMessage != null)
                 {
-                    foreach (GroupUpdate item in res.Updates)
+                    foreach (GroupUpdate item in longPoll.Updates)
                     {
-                        currentTs = res.Ts;
-
-                        if (item?.Message?.RandomId != 0) 
-                        { 
-                            continue; 
+                        currentTs = longPoll.Ts;
+                        
+                        if (item?.MessageEvent != null)
+                        {
+                            CallbackAnswerInChat(item);
                         }
 
+                        if (item?.Message?.RandomId != 0)
+                        {
+                            continue;
+                        }
                         OnMessage?.Invoke(item);
                         Thread.Sleep(100);
+                        
                     }
                 }
                 Thread.Sleep(2000);
             }
         }
 
+        private void CallbackAnswerInChat(GroupUpdate item)
+        {  
+            switch (item?.MessageEvent?.Payload)
+            {
+                case "{\r\n  \"button\": \"TimetableToday\"\r\n}":  //отправляет расписание на текущий день
+                    SendMessage(item);
+                    break;
+                    
+                case "{\r\n  \"button\": \"NextLesson\"\r\n}":  //присылает уведомление о следующем занятии
+                    SendNotification(item, "{\r\n  \"button\": \"NextLesson\"\r\n}");
+                    break;
+                case "{\r\n  \"button\": \"GetHW\"\r\n}":  //присылает уведомление о следующем занятии
+                    SendMessageUser(item, "{\r\n  \"button\": \"GetHW\"\r\n}");
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void CreateKeyboard()
+        {
+            messageKeyboard = new MessageKeyboard();
+            messageKeyboard.Inline = false;
+            messageKeyboard.OneTime = false;
+
+            messageKeyboard.Buttons = new List<List<MessageKeyboardButton>>()
+            {
+                //1я строка
+                new List<MessageKeyboardButton>()   
+                {
+                    new MessageKeyboardButton()
+                    {
+                        Action = new MessageKeyboardButtonAction()
+                        {
+                            Type =  KeyboardButtonActionType.Callback,
+                            Payload = "{\"button\": \"TimetableToday\"}",
+                            Label = "Расписание на сегодня"
+                        },
+                        Color = KeyboardButtonColor.Primary
+
+                    },
+                    new MessageKeyboardButton()
+                    {
+                        Action = new MessageKeyboardButtonAction()
+                        {
+                            Type =  KeyboardButtonActionType.Callback,
+                            Payload = "{\"button\": \"NextLesson\"}",
+                            Label = "Следующая пара"
+                        },
+                        Color = KeyboardButtonColor.Primary
+                    },
+                },
+
+                //2я строка
+                new List<MessageKeyboardButton>()   
+                {
+                    new MessageKeyboardButton()
+                    {
+                        Action = new MessageKeyboardButtonAction()
+                        {
+                            Type =  KeyboardButtonActionType.OpenLink,
+                            Label="E-learning",
+                            Link = new Uri("https://e-learning.mgupp.ru/login/index.php")
+                        }
+                    }
+                },
+
+                //3я строка
+                new List<MessageKeyboardButton>()
+                {
+                    new MessageKeyboardButton()
+                    {
+                        Action = new MessageKeyboardButtonAction()
+                        {
+                            Type = KeyboardButtonActionType.OpenLink,
+                            Label = "Личный кабинет",
+                            Link = new Uri("https://mgupp.ru/cabinet/index.php")
+                        }
+                    }
+                }
+            };
+        }
+
+        /// <summary>
+        /// Отправляет уведомление о следующем занятии
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="payload"></param>
+        private void SendNotification(GroupUpdate item, string payload)
+        {
+            EventData eventData = new EventData();
+            eventData.Type = MessageEventType.SnowSnackbar;
+            switch (payload)
+            {
+                case "{\r\n  \"button\": \"NextLesson\"\r\n}":
+                    eventData.Text = ParserTimetable.ParserTimetable.ShowNextLesson(DateTime.Now);
+                    break;
+                default:
+                    eventData.Text = "Не понимаю :(";
+                    break;
+            }
+
+            vkClient.Messages.SendMessageEventAnswer(item.MessageEvent.EventId,
+                                                     (long)item.MessageEvent.UserId,
+                                                     (long)item.MessageEvent.PeerId,
+                                                     eventData);
+        }
+
+        /// <summary>
+        /// Отправляет сообщение в чат
+        /// </summary>
+        /// <param name="item"></param>
+        private void SendMessage(GroupUpdate item)
+        {
+            MessagesSendParams msg = new MessagesSendParams()
+            {
+                RandomId = Guid.NewGuid().GetHashCode(),
+                Message = ParserTimetable.ParserTimetable.ShowTimetableOfDay(DateTime.Now),
+                Keyboard = messageKeyboard,
+                PeerId = item.MessageEvent.PeerId
+            };
+
+            vkClient.Messages.SendMessageEventAnswer(item.MessageEvent.EventId,
+                                                    (long)item.MessageEvent.UserId,
+                                                    (long)item.MessageEvent.PeerId,
+                                                    null);
+            vkClient.Messages.SendAsync(msg);
+        }
+
+        private void SendMessageUser(GroupUpdate item, string payload)
+        {
+            MessagesSendParams msg = new MessagesSendParams()
+            {
+                RandomId = Guid.NewGuid().GetHashCode(),
+                Message = ParserTimetable.ParserTimetable.ShowTimetableOfDay(DateTime.Now),
+                Keyboard = messageKeyboard,
+                PeerId = item.MessageEvent.UserId
+            };
+
+            switch (payload) 
+            {
+                case "{\r\n  \"button\": \"GetHW\"\r\n}":
+                    msg.Message = 
+                    break;
+            }
+
+            vkClient.Messages.SendMessageEventAnswer(item.MessageEvent.EventId,
+                                                    (long)item.MessageEvent.UserId,
+                                                    (long)item.MessageEvent.PeerId,
+                                                    null);
+            vkClient.Messages.SendAsync(msg);
+        }
     }
 }

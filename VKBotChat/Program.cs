@@ -10,13 +10,12 @@ namespace VKBotChat
 {
     class Program
     {
-        public static VkApi api = new VkApi();
-
         static void Main(string[] args)
         {
-            ParserTimetable.Program.Start();
+            ParserTimetable.ParserTimetable.Start();
 
             new Bot(VkBotConfig.Instance).Start();
+
             Console.WriteLine("Кукусики, мы тут чат-ботимся!");
 
             Console.ReadLine();
