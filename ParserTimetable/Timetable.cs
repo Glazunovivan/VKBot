@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Schedule;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,6 +12,8 @@ namespace ParserTimetable
     /// </summary>
     public class Timetable
     {
+        private const string NO_LESSONS = "На сегодня занятий больше нет, отдыхайте ;)";
+
         private struct EvenWeek
         {
             public DateTime dateStart;
@@ -19,7 +22,8 @@ namespace ParserTimetable
         }
 
         private List<EvenWeek> EvenWeeks { get; set; }
-        public List<DayOfWeek> DaysOfWeek { get; private set; }
+
+        public List<DayOfWeekLesson> DaysOfWeek { get; private set; }
 
         //получаем ссылку на расписание конкретной группы
         public Timetable(string URL)
@@ -101,7 +105,12 @@ namespace ParserTimetable
 
             int day = ConvertDate(dateTime);
 
-            DayOfWeek currentDay = DaysOfWeek[day];
+            DayOfWeekLesson currentDay = DaysOfWeek[day];
+
+            if (currentDay.Lessons.Count == 0 || currentDay.Lessons == null)
+            {
+                return NO_LESSONS;
+            }
 
             string[] lastLessonTimeEnd = currentDay.Lessons[currentDay.Lessons.Count - 1].TimeEnd.Split(':');
             Time timeLastLess = new Time();
@@ -113,9 +122,12 @@ namespace ParserTimetable
             timeFirstLes.Hour = Convert.ToInt32(firstLessonTimeStart[0]);
             timeFirstLes.Minute = Convert.ToInt32(firstLessonTimeStart[1]);
 
-            if (DateTime.Now.Hour >= timeLastLess.Hour && DateTime.Now.Minute >= timeLastLess.Minute)
+            if (DateTime.Now.Hour >= timeLastLess.Hour)
             {
-                result = "На сегодня занятий больше нет, отдыхайте ;)";
+                if (DateTime.Now.Minute >= timeLastLess.Minute)
+                {
+                    result = NO_LESSONS;
+                }
             }
             else if (DateTime.Now.Hour <= timeFirstLes.Hour && DateTime.Now.Minute <= timeFirstLes.Minute)
             {
@@ -146,19 +158,9 @@ namespace ParserTimetable
                     }
                     else
                     {
-                        result = "На сегодня занятий больше нет, отдыхайте ;)";
+                        result = NO_LESSONS;
                     }
                 }
-            }
-            return result;
-        }
-
-        private string GetAllDaysWriteLine()
-        {
-            string result = "";
-            foreach (DayOfWeek day in DaysOfWeek)
-            {
-                result += $"{day.Day}\n";
             }
             return result;
         }
@@ -167,7 +169,7 @@ namespace ParserTimetable
         {
             string result = "";
 
-            DayOfWeek dayOfWeek = DaysOfWeek[day];
+            DayOfWeekLesson dayOfWeek = DaysOfWeek[day];
 
             int i = 1;
             foreach (Lesson les in dayOfWeek.Lessons)

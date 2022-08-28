@@ -2,11 +2,9 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Xml;
-using System.Xml.Serialization;
-using System.IO;
 using System.Xml.Linq;
 using System.Net;
+using Schedule;
 
 namespace ParserTimetable
 {
@@ -14,8 +12,8 @@ namespace ParserTimetable
     {
         private HtmlAgilityPack.HtmlDocument _htmlDoc;
         private HtmlAgilityPack.HtmlWeb _web;
+        
         private string _url;
-        private List<LinkLesson> _links;
 
         public Parser(string url)
         {
@@ -24,49 +22,24 @@ namespace ParserTimetable
             _htmlDoc = new HtmlAgilityPack.HtmlDocument();
         }
 
-        public List<DayOfWeek> StartParse()
+        public List<DayOfWeekLesson> StartParse()
         {
-            _links = LoadLinks();
-
-            List<DayOfWeek> days = new List<DayOfWeek>();
+            List<DayOfWeekLesson> days = new List<DayOfWeekLesson>();
 
             _htmlDoc = _web.Load(_url);
 
+            //учебные дни в расписании
             var localDays = _htmlDoc.DocumentNode.SelectNodes("//*[@id=\"content-tab1\"]/h2");
 
             for (int i = 0, j = 0; i < 7; i++)
             {
-                DayOfWeek dayOfWeek = new DayOfWeek();
-                string day = "";
+                DayOfWeekLesson dayOfWeek = new DayOfWeekLesson();
 
-                switch (i) 
-                {
-                    case 0:
-                        day = "Понедельник";
-                        break;
-                    case 1:
-                        day = "Вторник";
-                        break;
-                    case 2:
-                        day = "Среда";
-                        break;
-                    case 3:
-                        day = "Четверг";
-                        break;
-                    case 4:
-                        day = "Пятница";
-                        break;
-                    case 5:
-                        day = "Суббота";
-                        break;
-                    case 6:
-                        day = "Воскресенье";
-                        break;
-                }
+                string dayName = NameOfDay(i);
 
                 if (j < localDays.Count)
                 {
-                    if (day == localDays[j].InnerText)
+                    if (dayName == localDays[j].InnerText)
                     {
                         //загружаем занятия на день
                         dayOfWeek.Lessons = LoadLessons(j);
@@ -74,21 +47,57 @@ namespace ParserTimetable
                     }
                     else
                     {
-                        dayOfWeek.Lessons = null;
+                        dayOfWeek.Lessons = new List<Lesson>(0);
                     }
                 }
                 //именуем название дня
-                dayOfWeek.Day = day;
+                dayOfWeek.Day = dayName;
                 days.Add(dayOfWeek);
-
             }
             return days;
         }
-        
+
+        private string NameOfDay(int i)
+        {
+            string day = String.Empty;
+            switch (i)
+            {
+                case 0:
+                    day = "Понедельник";
+                    break;
+                case 1:
+                    day = "Вторник";
+                    break;
+                case 2:
+                    day = "Среда";
+                    break;
+                case 3:
+                    day = "Четверг";
+                    break;
+                case 4:
+                    day = "Пятница";
+                    break;
+                case 5:
+                    day = "Суббота";
+                    break;
+                case 6:
+                    day = "Воскресенье";
+                    break;
+            }
+
+            return day;
+        }
+
+        /// <summary>
+        /// Загрузка занятий на целый день
+        /// </summary>
+        /// <param name="day"></param>
+        /// <returns></returns>
         private List<Lesson> LoadLessons(int day)
         {
             List<Lesson> lessons = new List<Lesson>();
             
+            //а вот это вот зачем? 
             day++;
 
             string XPathInDay = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr";
@@ -103,6 +112,7 @@ namespace ParserTimetable
                 //*[@id="content-tab1"]/div[1]/table/tbody/tr[2]/td[2]/div[1]/text()[1] -- название занятия
                 //*[@id="content-tab1"]/div[1]/table/tbody/tr[2]/td[3]/div -- аудитория
                 //*[@id="content-tab1"]/div[1]/table/tbody/tr[2]/td[4]/div -- преподаватель
+
                 XPathLesson = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[1]/div/text()";  //-время
                 var time = _htmlDoc.DocumentNode.SelectSingleNode(XPathLesson).InnerText;
                 string[] splitTime = time.Split('-');
@@ -118,20 +128,34 @@ namespace ParserTimetable
                 ////*[@id="content-tab1"]/div[1]/table/tbody/tr[3]/td[2]/div[1]/text()[1]
                 //XPathLesson = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[2]/div[1]/text()[1]";
 
-                XPathLesson = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[3]/div/text()";  //-аудитория
+                //-аудитория
+                XPathLesson = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[3]/div/text()";  
                 string classroom = _htmlDoc.DocumentNode.SelectSingleNode(XPathLesson).InnerText;
                 lesson.Classroom = classroom;
 
-                XPathLesson = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[3]/div/text()[2]";  //-корпус
+                //-корпус
+                XPathLesson = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[3]/div/text()[2]";  
                 classroom = _htmlDoc.DocumentNode.SelectSingleNode(XPathLesson).InnerText;
                 lesson.Classroom += " "+classroom;
 
-                XPathLesson = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[4]/div/a/text()";  //-преподаватель
-                string lecture = _htmlDoc.DocumentNode.SelectSingleNode(XPathLesson).InnerText;
+                //-преподаватель
+                XPathLesson = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[4]/div/text()";
+
+                string lecture = String.Empty;
+                var node = _htmlDoc.DocumentNode.SelectSingleNode(XPathLesson);
+
+                if (node != null)
+                {
+                    lecture = _htmlDoc.DocumentNode.SelectSingleNode(XPathLesson).InnerText;
+                }
+                else
+                {
+                    lecture = " :( ";
+                }
                 lesson.Lecturer = lecture;
 
                 //загружаем ссылку на занятие
-                lesson.Link = GetLinkInLesson(nameLes);
+                //lesson.Link = GetLinkInLesson(nameLes);
 
                 lessons.Add(lesson);
             }
@@ -139,9 +163,9 @@ namespace ParserTimetable
             return lessons;
         }
 
-        private List<LinkLesson> LoadLinks()
+        private List<LinkRemoteLesson> LoadLinks()
         {
-            List<LinkLesson> linkLessons = new List<LinkLesson>();
+            List<LinkRemoteLesson> linkLessons = new List<LinkRemoteLesson>();
 
             string url = @"https://raw.githubusercontent.com/Glazunovivan/LessonsXML/main/LinksForLessons.xml";
             string xml = new WebClient().DownloadString(url);
@@ -151,26 +175,15 @@ namespace ParserTimetable
 
             foreach (var item in collection)
             {
-                LinkLesson linkLesson = new LinkLesson();
-                linkLesson.Name = item.Attribute("name").Value;
-                linkLesson.Link = item.Element("Link").Value;
+                LinkRemoteLesson linkLesson = new LinkRemoteLesson()
+                {
+                    Name = item.Attribute("name").Value,
+                    Link = item.Element("Link").Value
+                };
                 linkLessons.Add(linkLesson);
             }
 
             return linkLessons;
-        }
-
-        private string GetLinkInLesson(string name)
-        {
-            foreach (LinkLesson item in _links)
-            {
-                name = name.TrimEnd(' ');
-                if (item.Name == name)
-                {
-                    return item.Link;
-                }
-            }
-            return "";
         }
     }
 }

@@ -18,6 +18,7 @@ namespace VKBotChat
 
             Console.WriteLine("Кукусики, мы тут чат-ботимся!");
 
+            Console.WriteLine("Нажмите любую кнопку для завершения работы");
             Console.ReadLine();
         }
     }
