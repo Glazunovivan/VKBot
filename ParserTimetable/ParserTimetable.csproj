@@ -12,4 +12,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Schedule\Schedule.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="url.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

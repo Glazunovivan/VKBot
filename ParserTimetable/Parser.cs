@@ -22,7 +22,7 @@ namespace ParserTimetable
             _htmlDoc = new HtmlAgilityPack.HtmlDocument();
         }
 
-        public List<DayOfWeekWithLesson> StartParse()
+        public List<DayOfWeekWithLesson> GetLessonsWithDays()
         {
             List<DayOfWeekWithLesson> days = new List<DayOfWeekWithLesson>();
 
