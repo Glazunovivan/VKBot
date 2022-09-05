@@ -13,13 +13,15 @@ namespace ChatBotConfig
     {
         public string AccessToken { get; set; }
         public ulong GroupID { get; set; }
+        public long? ChatID { get; set; }
 
         public Configs() { }
 
-        public Configs(string accessToken, ulong groupId)
+        public Configs(string accessToken, ulong groupId, long? chatID)
         {
             AccessToken = accessToken;
             GroupID = groupId;
+            ChatID = chatID;
         }
 
         public Configs LoadConfigs(string path)

@@ -10,6 +10,7 @@ namespace ChatBotConfig
         private static readonly VkBotConfig _config;
         private string _accessToken;
         private ulong _groupId;
+        private long? _chatId;
 
         static VkBotConfig()
         {
@@ -18,6 +19,11 @@ namespace ChatBotConfig
 
         public string AccessToken => _accessToken;
         public ulong GroupId => _groupId;
+        public long? ChatID => _chatId;
+
+        /// <summary>
+        /// Singleton
+        /// </summary>
         public static VkBotConfig Instance => _config;
 
         private VkBotConfig()
@@ -27,6 +33,7 @@ namespace ChatBotConfig
 
             _accessToken = configs.AccessToken;
             _groupId = configs.GroupID;
+            _chatId = configs.ChatID;
         }
     }
 }

@@ -1,11 +1,7 @@
 ﻿using System;
 using ChatBotConfig;
-using Microsoft.Extensions.Configuration;
 using VkBotChat;
-using VkNet;
-using VkNet.Enums.SafetyEnums;
-using VkNet.Model;
-using VkNet.Model.RequestParams;
+
 
 namespace VKBotChat
 {

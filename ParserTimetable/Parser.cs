@@ -59,7 +59,7 @@ namespace ParserTimetable
 
         private string NameOfDay(int i)
         {
-            string day = String.Empty;
+            string day = string.Empty;
             switch (i)
             {
                 case 0:
