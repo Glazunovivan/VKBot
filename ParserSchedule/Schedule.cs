@@ -1,20 +1,14 @@
-﻿using Schedule;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace ParserTimetable
+namespace ParserSchedule
 {
     /// <summary>
     /// Содержит всю информацию по расписанию
     /// </summary>
-    public class Timetable
+    public class Schedule
     {
-        private const string _weekDateStart = "2022.01.03 00:00";
-        private const string _weekDateEnd = "2022.01.09 23:59";
-
         private struct EvenWeek
         {
             public DateTime dateStart;
@@ -22,28 +16,23 @@ namespace ParserTimetable
             public bool isEven;
         }
 
-        private List<EvenWeek> _evenWeeks { get; set; }
+        private List<EvenWeek> EvenWeeks { get; set; }
 
-        public List<DayOfWeekWithLesson> DayOfWeekWithLessons { get; private set; }
+        public List<DayOfWeekLesson> DaysOfWeek { get; private set; }
 
-        
+        //передаем ссылку на расписание конкретной группы
         public Timetable(string URL)
         {
-            Console.WriteLine("Загружаем расписание");
+            Console.WriteLine("Загружаем расписание!");
             Parser parser = new Parser(URL);
-            DayOfWeekWithLessons = parser.StartParse();
+            DaysOfWeek = parser.StartParse();
 
-            CalculateWeeks();
-        }
-
-        private void CalculateWeeks()
-        {
-            _evenWeeks = new List<EvenWeek>();
+            EvenWeeks = new List<EvenWeek>();
             EvenWeek firstWeek = new EvenWeek();
-            firstWeek.dateStart = DateTime.Parse(_weekDateStart);
-            firstWeek.dateEnd = DateTime.Parse(_weekDateEnd);
+            firstWeek.dateStart = DateTime.Parse("2022.01.03 00:00");
+            firstWeek.dateEnd = DateTime.Parse("2022.01.09 23:59");
             firstWeek.isEven = false;
-            _evenWeeks.Add(firstWeek);
+            EvenWeeks.Add(firstWeek);
 
             for (int i = 0; i < 25; i++)
             {
@@ -60,7 +49,7 @@ namespace ParserTimetable
                 week.dateStart = firstWeek.dateEnd.AddDays((i * 7) + 1);
                 week.dateEnd = week.dateStart.AddDays(6);
 
-                _evenWeeks.Add(week);
+                EvenWeeks.Add(week);
             }
         }
 
@@ -70,8 +59,8 @@ namespace ParserTimetable
         /// <param name="day"></param>
         public void ShowDayWithLessons(int day)
         {
-            Console.WriteLine($"{DayOfWeekWithLessons[day].Day}");
-            Console.WriteLine(GetDaysWithLessonsInLine(day));
+            Console.WriteLine($"{DaysOfWeek[day].Day}");
+            Console.WriteLine(GetDaysWithLessonsWriteLine(day));
         }
 
         /// <summary>
@@ -79,16 +68,16 @@ namespace ParserTimetable
         /// </summary>
         /// <param name="dayOfWeek"></param>
         /// <returns></returns>
-        public string GetLessonsOrEmpty(System.DateTime dateTime)
+        public string GetLessons(System.DateTime dateTime)
         {
             int day = ConvertDate(dateTime);
 
-            string result = string.Empty;
+            string result = "";
 
-            if (DayOfWeekWithLessons[day].Lessons != null)
+            if (DaysOfWeek[day].Lessons != null)
             {
-                result += $"{DayOfWeekWithLessons[day].Day}\n{GetDaysWithLessonsInLine(day)}";
-                //result += $"{GetDaysWithLessonsWriteLine(day)}";
+                result += $"{DaysOfWeek[day].Day}\n";
+                result += $"{GetDaysWithLessonsWriteLine(day)}";
             }
             else
             {
@@ -111,22 +100,22 @@ namespace ParserTimetable
 
             int day = ConvertDate(dateTime);
 
-            DayOfWeekWithLesson currentDay = DayOfWeekWithLessons[day];
+            DayOfWeekLesson currentDay = DaysOfWeek[day];
 
             if (currentDay.Lessons.Count == 0 || currentDay.Lessons == null)
             {
-                return string.Empty;
+                return String.Empty;
             }
 
-            string[] lastLessonTimeEndParse = currentDay.Lessons[currentDay.Lessons.Count - 1].TimeEnd.Split(':');
+            string[] lastLessonTimeEnd = currentDay.Lessons[currentDay.Lessons.Count - 1].TimeEnd.Split(':');
             Time timeLastLess = new Time();
-            timeLastLess.Hour = Convert.ToInt32(lastLessonTimeEndParse[0]);
-            timeLastLess.Minute = Convert.ToInt32(lastLessonTimeEndParse[1]);
+            timeLastLess.Hour = Convert.ToInt32(lastLessonTimeEnd[0]);
+            timeLastLess.Minute = Convert.ToInt32(lastLessonTimeEnd[1]);
 
-            string[] firstLessonTimeStartParse = currentDay.Lessons[0].TimeEnd.Split(':');
+            string[] firstLessonTimeStart = currentDay.Lessons[0].TimeEnd.Split(':');
             Time timeFirstLes = new Time();
-            timeFirstLes.Hour = Convert.ToInt32(firstLessonTimeStartParse[0]);
-            timeFirstLes.Minute = Convert.ToInt32(firstLessonTimeStartParse[1]);
+            timeFirstLes.Hour = Convert.ToInt32(firstLessonTimeStart[0]);
+            timeFirstLes.Minute = Convert.ToInt32(firstLessonTimeStart[1]);
 
             if (DateTime.Now.Hour >= timeLastLess.Hour)
             {
@@ -164,18 +153,18 @@ namespace ParserTimetable
                     }
                     else
                     {
-                        result = string.Empty;
+                        result = String.Empty;
                     }
                 }
             }
             return result;
         }
 
-        private string GetDaysWithLessonsInLine(int day)
+        private string GetDaysWithLessonsWriteLine(int day)
         {
-            string result = string.Empty;
+            string result = "";
 
-            DayOfWeekWithLesson dayOfWeek = DayOfWeekWithLessons[day];
+            DayOfWeekLesson dayOfWeek = DaysOfWeek[day];
 
             int i = 1;
             foreach (Lesson les in dayOfWeek.Lessons)
@@ -198,9 +187,6 @@ namespace ParserTimetable
                     case 5:
                         currentLess += "5 пара ";
                         break;
-                    case 6:
-                        currentLess += "6 пара ";
-                        break;
                 }
 
                 if (les.Name.Contains("(II)"))  //это четная неделя
@@ -210,7 +196,7 @@ namespace ParserTimetable
                         result += currentLess;
                         result += $"({les.TimeStart}-{les.TimeEnd})\n{les.Name}\n{les.Classroom}\n{les.Lecturer}\n{les.Link}\n";
                         result += "\n";
-                        result = result.Replace("(II)","");
+                        result = result.Replace("(II)", "");
                         i++;
                     }
                 }
@@ -225,15 +211,16 @@ namespace ParserTimetable
                         i++;
                     }
                 }
-                else //а это если каждую неделю
+                else    //а это если евривик
                 {
                     result += currentLess;
                     result += $"({les.TimeStart}-{les.TimeEnd})\n{les.Name}\n{les.Classroom}\n{les.Lecturer}\n{les.Link}\n";
                     result += "\n";
                     i++;
                 }
-                
+
             }
+
             return result;
         }
 
@@ -252,7 +239,7 @@ namespace ParserTimetable
 
         private bool WeekIsEven(DateTime dateTime)
         {
-            foreach (EvenWeek evenWeek in _evenWeeks)
+            foreach (EvenWeek evenWeek in EvenWeeks)
             {
                 if (evenWeek.dateStart >= dateTime && dateTime <= evenWeek.dateEnd)
                 {

@@ -22,9 +22,9 @@ namespace ParserTimetable
             _htmlDoc = new HtmlAgilityPack.HtmlDocument();
         }
 
-        public List<DayOfWeekLesson> StartParse()
+        public List<DayOfWeekWithLesson> StartParse()
         {
-            List<DayOfWeekLesson> days = new List<DayOfWeekLesson>();
+            List<DayOfWeekWithLesson> days = new List<DayOfWeekWithLesson>();
 
             _htmlDoc = _web.Load(_url);
 
@@ -33,7 +33,7 @@ namespace ParserTimetable
 
             for (int i = 0, j = 0; i < 7; i++)
             {
-                DayOfWeekLesson dayOfWeek = new DayOfWeekLesson();
+                DayOfWeekWithLesson dayOfWeek = new DayOfWeekWithLesson();
 
                 string dayName = NameOfDay(i);
 
@@ -42,7 +42,7 @@ namespace ParserTimetable
                     if (dayName == localDays[j].InnerText)
                     {
                         //загружаем занятия на день
-                        dayOfWeek.Lessons = LoadLessons(j);
+                        dayOfWeek.Lessons = LoadLessons(j+1);
                         j++;
                     }
                     else
@@ -84,7 +84,6 @@ namespace ParserTimetable
                     day = "Воскресенье";
                     break;
             }
-
             return day;
         }
 
@@ -96,10 +95,7 @@ namespace ParserTimetable
         private List<Lesson> LoadLessons(int day)
         {
             List<Lesson> lessons = new List<Lesson>();
-            
-            //а вот это вот зачем? 
-            day++;
-
+           
             string XPathInDay = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr";
             int itemCount = _htmlDoc.DocumentNode.SelectNodes(XPathInDay).Count;
 

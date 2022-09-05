@@ -10,7 +10,6 @@ namespace ParserTimetable
 
         public static void Main()
         {
-
         }
 
         public static void Start()
@@ -34,7 +33,7 @@ namespace ParserTimetable
                 Start();
             }
 
-            return _timetable.GetLessons(dateTime);
+            return _timetable.GetLessonsOrEmpty(dateTime);
         }
 
         /// <summary>

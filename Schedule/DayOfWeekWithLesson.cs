@@ -2,7 +2,7 @@
 
 namespace Schedule
 {
-    public class DayOfWeekLesson
+    public class DayOfWeekWithLesson
     {
         public string Day { get; set; }
 
