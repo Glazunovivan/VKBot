@@ -9,7 +9,7 @@ namespace VKBotChat.Commands
     /// <summary>
     /// Отправляет личное сообщение пользователю, если у того есть права
     /// </summary>
-    public class PrivateMessageCommand : Command,ICommand
+    public class PrivateMessageCommand : Command
     {
         private MessageKeyboard _messageKeyboard;
 
@@ -18,7 +18,7 @@ namespace VKBotChat.Commands
             _messageKeyboard = keyboard;
         }
 
-        public void Action(VkApi api)
+        public override void Action(VkApi api)
         {
             try
             {

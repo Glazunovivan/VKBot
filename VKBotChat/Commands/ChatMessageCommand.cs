@@ -9,7 +9,7 @@ namespace VKBotChat.Commands
     /// <summary>
     /// Отправляет сообщение в чат группы по событию
     /// </summary>
-    public class ChatMessageCommand : Command,ICommand
+    public class ChatMessageCommand : Command
     {
         private MessageKeyboard _messageKeyboard;
 
@@ -18,25 +18,17 @@ namespace VKBotChat.Commands
             _messageKeyboard = messageKeyboard;
         }
         
-        public void Action(VkApi api)
+        public override void Action(VkApi api)
         {
             
             MessagesSendParams msg = new MessagesSendParams()
             {
                 RandomId = Guid.NewGuid().GetHashCode(),
                 PeerId = Event.Message.PeerId,
+                Message = "Йоу",
                 Keyboard = _messageKeyboard
             };
 
-            switch (Event?.Message?.Text)
-            {
-                case "кнопки":
-                    msg.Message = "Включаю кнопки";
-                    msg.Keyboard = _messageKeyboard;
-                    break;
-                default:
-                    return;
-            }
             api.Messages.Send(msg);
         }
     }

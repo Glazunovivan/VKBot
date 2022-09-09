@@ -47,9 +47,6 @@ namespace VkBotChat
         public void Start(Action<GroupUpdate> onMessage = null)
         {
             Console.WriteLine("Запуск бота...");
-
-            OnMessage += SendMessageChatGroup;
-
             Console.WriteLine("Раздаем задачи");
 
             Task observeUpdate = new Task(OnUpdate);
@@ -62,27 +59,15 @@ namespace VkBotChat
         /// <summary>
         /// Отправляет сообщение в чат группы по событию
         /// </summary>
-        /// <param name="event"></param>
-        private void SendMessageChatGroup(GroupUpdate @event)
+        private void ButtonsOn(GroupUpdate @event)
         {
-            MessagesSendParams msg = new MessagesSendParams();
-
-            msg = new MessagesSendParams()
+            MessagesSendParams msg = new MessagesSendParams()
             {
                 RandomId = Guid.NewGuid().GetHashCode(),
                 PeerId = @event.Message.PeerId,
+                Message = "Включаю кнопки",
                 Keyboard = messageKeyboard
             };
-
-            switch (@event?.Message?.Text)
-            {
-                case "кнопки":
-                    msg.Message = "Включаю кнопки";
-                    msg.Keyboard = messageKeyboard;
-                    break;
-                default:
-                    return;
-            }
             vkClient.Messages.Send(msg);
         }
 
@@ -129,7 +114,8 @@ namespace VkBotChat
 
         private void CallbackAnswerInChat(GroupUpdate @event)
         {
-            ICommand command; 
+            ICommand command;
+
             switch (@event?.MessageEvent?.Payload)
             {
                 //отправляет расписание на текущий день
@@ -244,12 +230,16 @@ namespace VkBotChat
                             CallbackAnswerInChat(item);
                         }
 
+                        if (item?.Message?.Text == "кнопки")
+                        {
+                            ButtonsOn(item);
+                        }
+
                         if (item?.Message?.RandomId != 0)
                         {
                             continue;
                         }
 
-                        //OnMessage?.Invoke(item);
                         Thread.Sleep(100);
                     }
                 }

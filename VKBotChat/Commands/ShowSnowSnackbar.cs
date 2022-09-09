@@ -9,11 +9,11 @@ namespace VKBotChat.Commands
     /// <summary>
     /// Отправляет уведомление о следующем занятии
     /// </summary>
-    public class ShowSnowSnackbar :Command, ICommand
+    public class ShowSnowSnackbar :Command
     {
         public ShowSnowSnackbar(GroupUpdate @event) : base(@event) { }
 
-        public void Action(VkApi api)
+        public override void Action(VkApi api)
         {
             EventData eventData = new EventData()
             {
