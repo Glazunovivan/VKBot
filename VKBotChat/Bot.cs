@@ -30,10 +30,11 @@ namespace VkBotChat
                 AccessToken = config.AccessToken,
                 Settings = Settings.All | Settings.Messages
             });
+
             _chatID = config.ChatID;
 
-            BotKeyboardCreator botKeyboardCreator = new BotKeyboardCreator();
-            _messageKeyboard = botKeyboardCreator.LoadKeyboard();
+            _messageKeyboard = new BotKeyboardCreator().LoadKeyboard().Create();
+
             
             _longPollServerResponse = _vkClient.Groups.GetLongPollServer(config.GroupId);
             _currentTs = _longPollServerResponse.Ts;

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace HomeWork
+﻿namespace HomeWork
 {
     public class HomeWorkMain
     {

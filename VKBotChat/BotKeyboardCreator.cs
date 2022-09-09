@@ -6,6 +6,12 @@ namespace VKBotChat
     internal class BotKeyboardCreator
     {
         private const string PATH = "keyboard.json";
+        private BotKeyboard _botKeyboard;
+
+        public BotKeyboardCreator()
+        {
+            _botKeyboard = new BotKeyboard();    
+        }
 
         private void SaveKeyboard(BotKeyboard botKeyboard)
         {
@@ -14,24 +20,26 @@ namespace VKBotChat
             File.WriteAllText(PATH, keyboard);
         }
 
-        public BotKeyboard LoadKeyboard()
+        public BotKeyboardCreator LoadKeyboard()
         {
-            BotKeyboard botKeyboard;
-
             //TODO : поправить эту дичь
             if (!File.Exists(PATH))
             {
-                botKeyboard = JsonConvert.DeserializeObject<BotKeyboard>(File.ReadAllText(PATH));
+                _botKeyboard = JsonConvert.DeserializeObject<BotKeyboard>(File.ReadAllText(PATH));
             }
             else
             {
-                botKeyboard = new BotKeyboard();
-                botKeyboard.DefaultCreateKeboard();
+                _botKeyboard = new BotKeyboard();
+                _botKeyboard.DefaultCreateKeboard();
 
-                SaveKeyboard(botKeyboard);
+                SaveKeyboard(_botKeyboard);
             }
+            return this;
+        }
 
-            return botKeyboard;
+        public BotKeyboard Create()
+        {
+            return _botKeyboard;
         }
 
     }
