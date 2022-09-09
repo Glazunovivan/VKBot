@@ -18,7 +18,7 @@ namespace VKBotChat.Commands
             _messageKeyboard = keyboard;
         }
 
-        public void Do(VkApi api)
+        public void Action(VkApi api)
         {
             try
             {

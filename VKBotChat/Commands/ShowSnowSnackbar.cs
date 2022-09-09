@@ -13,7 +13,7 @@ namespace VKBotChat.Commands
     {
         public ShowSnowSnackbar(GroupUpdate @event) : base(@event) { }
 
-        public void Do(VkApi api)
+        public void Action(VkApi api)
         {
             EventData eventData = new EventData()
             {

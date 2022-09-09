@@ -18,11 +18,10 @@ namespace VKBotChat.Commands
             _messageKeyboard = messageKeyboard;
         }
         
-        public void Do(VkApi api)
+        public void Action(VkApi api)
         {
-            MessagesSendParams msg = new MessagesSendParams();
-
-            msg = new MessagesSendParams()
+            
+            MessagesSendParams msg = new MessagesSendParams()
             {
                 RandomId = Guid.NewGuid().GetHashCode(),
                 PeerId = Event.Message.PeerId,

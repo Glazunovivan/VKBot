@@ -4,6 +4,6 @@ namespace VKBotChat.Commands
 {
     public interface ICommand
     {
-        public void Do(VkApi api);
+        public void Action(VkApi api);
     }
 }

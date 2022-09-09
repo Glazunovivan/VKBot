@@ -135,19 +135,19 @@ namespace VkBotChat
                 //отправляет расписание на текущий день
                 case "{\r\n  \"button\": \"TimetableToday\"\r\n}":
                     command = new PrivateMessageCommand(@event, messageKeyboard);
-                    command.Do(vkClient);
+                    command.Action(vkClient);
                     break;
 
                 //присылает уведомление о следующем занятии
                 case "{\r\n  \"button\": \"NextLesson\"\r\n}":
                     command = new ShowSnowSnackbar(@event);
-                    command.Do(vkClient);
+                    command.Action(vkClient);
                     break;
 
                 //присылает ДЗ
                 case "{\r\n  \"button\": \"GetHomeWork\"\r\n}":
                     command = new PrivateMessageCommand(@event, messageKeyboard);
-                    command.Do(vkClient);
+                    command.Action(vkClient);
                     break;
 
                 //тест времени
