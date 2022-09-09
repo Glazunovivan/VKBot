@@ -1,4 +1,5 @@
-﻿using VkNet;
+﻿using VKBotChat.Commands.Interfaces;
+using VkNet;
 using VkNet.Model.GroupUpdate;
 
 namespace VKBotChat.Commands

@@ -12,10 +12,6 @@ namespace VKBotChat
 {
     internal class BotKeyboard : MessageKeyboard
     {
-        public BotKeyboard() 
-        {
-        }
-
         public void CreateKeboard()
         {
             Inline = false;

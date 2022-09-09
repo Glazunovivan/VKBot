@@ -17,6 +17,8 @@ namespace VKBotChat
         public BotKeyboard LoadKeyboard()
         {
             BotKeyboard botKeyboard;
+
+            //TODO : поправить эту дичь
             if (!File.Exists(PATH))
             {
                 botKeyboard = JsonConvert.DeserializeObject<BotKeyboard>(File.ReadAllText(PATH));

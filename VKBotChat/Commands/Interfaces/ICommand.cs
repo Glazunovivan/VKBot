@@ -1,6 +1,6 @@
 ﻿using VkNet;
 
-namespace VKBotChat.Commands
+namespace VKBotChat.Commands.Interfaces
 {
     public interface ICommand
     {

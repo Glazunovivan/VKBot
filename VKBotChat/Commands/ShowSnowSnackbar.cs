@@ -22,18 +22,10 @@ namespace VKBotChat.Commands
                 Type = MessageEventType.SnowSnackbar
             };
 
-            switch (Event?.MessageEvent?.Payload)
+            eventData.Text = ParserTimetable.ParserTimetable.ShowNextLesson(DateTime.Now);
+            if (eventData.Text == string.Empty)
             {
-                case "{\r\n  \"button\": \"NextLesson\"\r\n}":
-                    eventData.Text = ParserTimetable.ParserTimetable.ShowNextLesson(DateTime.Now);
-                    if (eventData.Text == string.Empty)
-                    {
-                        eventData.Text = "На сегодня занятий больше нет, отдыхайте ;)";
-                    }
-                    break;
-                default:
-                    eventData.Text = "Не понимаю :(";
-                    break;
+                eventData.Text = "На сегодня занятий больше нет, отдыхайте ;)";
             }
 
             api.Messages.SendMessageEventAnswer(Event.MessageEvent.EventId,
