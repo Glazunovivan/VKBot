@@ -20,4 +20,10 @@
     <ProjectReference Include="..\ParserTimetable\ParserTimetable.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="keyboard.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

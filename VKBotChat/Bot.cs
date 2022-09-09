@@ -1,7 +1,9 @@
 ﻿using ChatBotConfig;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using VKBotChat;
 using VkNet;
 using VkNet.Enums.Filters;
 using VkNet.Enums.SafetyEnums;
@@ -22,7 +24,6 @@ namespace VkBotChat
         private MessageKeyboard messageKeyboard;
 
         private long? _chatID;
-        private long _userID;
 
         public Bot(VkBotConfig config)
         {
@@ -35,6 +36,9 @@ namespace VkBotChat
             
             _chatID = config.ChatID;
 
+            messageKeyboard = new BotKeyboard();
+            
+
             longPollServerResponse = vkClient.Groups.GetLongPollServer(config.GroupId);
             currentTs = longPollServerResponse.Ts;
         }
@@ -42,8 +46,6 @@ namespace VkBotChat
         public void Start(Action<GroupUpdate> onMessage = null)
         {
             Console.WriteLine("Запуск бота...");
-            CreateKeyboard();
-
             OnMessage += SendMessageChatGroup;
 
             new Thread(OnUpdate).Start();
@@ -53,19 +55,19 @@ namespace VkBotChat
         /// <summary>
         /// Отправляет сообщение в чат группы по событию
         /// </summary>
-        /// <param name="e"></param>
-        private void SendMessageChatGroup(GroupUpdate e)
+        /// <param name="event"></param>
+        private void SendMessageChatGroup(GroupUpdate @event)
         {
             MessagesSendParams msg = new MessagesSendParams();
 
             msg = new MessagesSendParams()
             {
                 RandomId = Guid.NewGuid().GetHashCode(),
-                PeerId = e.Message.PeerId,
+                PeerId = @event.Message.PeerId,
                 Keyboard = messageKeyboard
             };
 
-            switch (e?.Message?.Text)
+            switch (@event?.Message?.Text)
             {
                 case "кнопки":
                     msg.Message = "Включаю кнопки";
@@ -80,16 +82,16 @@ namespace VkBotChat
         /// <summary>
         /// Отправляет уведомление о следующем занятии
         /// </summary>
-        /// <param name="item"></param>
+        /// <param name="event"></param>
         /// <param name="payload"></param>
-        private void SendSnowSnackbar(GroupUpdate item)
+        private void SendSnowSnackbar(GroupUpdate @event)
         {
             EventData eventData = new EventData()
             {
                 Type = MessageEventType.SnowSnackbar
             };
 
-            switch (item?.MessageEvent?.Payload)
+            switch (@event?.MessageEvent?.Payload)
             {
                 case "{\r\n  \"button\": \"NextLesson\"\r\n}":
                     eventData.Text = ParserTimetable.ParserTimetable.ShowNextLesson(DateTime.Now);
@@ -103,9 +105,9 @@ namespace VkBotChat
                     break;
             }
 
-            vkClient.Messages.SendMessageEventAnswer(item.MessageEvent.EventId,
-                                                     (long)item.MessageEvent.UserId,
-                                                     (long)item.MessageEvent.PeerId,
+            vkClient.Messages.SendMessageEventAnswer(@event.MessageEvent.EventId,
+                                                     (long)@event.MessageEvent.UserId,
+                                                     (long)@event.MessageEvent.PeerId,
                                                      eventData);
         }
 
@@ -150,25 +152,25 @@ namespace VkBotChat
             vkClient.Messages.Send(msg);
         }
 
-        private void CallbackAnswerInChat(GroupUpdate item)
+        private void CallbackAnswerInChat(GroupUpdate @event)
         {
-            switch (item?.MessageEvent?.Payload)
+            switch (@event?.MessageEvent?.Payload)
             {
                 //отправляет расписание на текущий день
                 case "{\r\n  \"button\": \"TimetableToday\"\r\n}":
                     //SendMessage(item);
                     //"{\r\n  \"button\": \"TimetableToday\"\r\n}"
-                    SendMessageUser(item);
+                    SendMessageUser(@event);
                     break;
                 //присылает уведомление о следующем занятии
                 case "{\r\n  \"button\": \"NextLesson\"\r\n}":
                     //"{\r\n  \"button\": \"NextLesson\"\r\n}"
-                    SendSnowSnackbar(item);
+                    SendSnowSnackbar(@event);
                     break;
                 //присылает ДЗ
                 case "{\r\n  \"button\": \"GetHomeWork\"\r\n}":
                     //"{\r\n  \"button\": \"GetHW\"\r\n}"
-                    SendMessageUser(item);
+                    SendMessageUser(@event);
                     break;
                 //тест времени
                 case "{\r\n  \"button\": \"TESTTIME\"\r\n}":
@@ -277,112 +279,29 @@ namespace VkBotChat
             }
         }
 
-        //TODO: сделать загрузку из файла json, для удобного редактирования
-        private void CreateKeyboard()
-        {
-            messageKeyboard = new MessageKeyboard();
-            messageKeyboard.Inline = false;
-            messageKeyboard.OneTime = false;
-
-            messageKeyboard.Buttons = new List<List<MessageKeyboardButton>>()
-            {
-                //1я строка
-                new List<MessageKeyboardButton>()
-                {
-                    new MessageKeyboardButton()
-                    {
-                        Action = new MessageKeyboardButtonAction()
-                        {
-                            Type =  KeyboardButtonActionType.Callback,
-                            Payload = "{\"button\": \"TimetableToday\"}",
-                            Label = "Расписание на сегодня"
-                        },
-                        Color = KeyboardButtonColor.Primary
-
-                    },
-                    new MessageKeyboardButton()
-                    {
-                        Action = new MessageKeyboardButtonAction()
-                        {
-                            Type =  KeyboardButtonActionType.Callback,
-                            Payload = "{\"button\": \"NextLesson\"}",
-                            Label = "Следующая пара"
-                        },
-                        Color = KeyboardButtonColor.Primary
-                    },
-                },
-
-                //2я строка
-                new List<MessageKeyboardButton>()
-                {
-                    new MessageKeyboardButton()
-                    {
-                        Action = new MessageKeyboardButtonAction()
-                        {
-                            Type =  KeyboardButtonActionType.OpenLink,
-                            Label="E-learning",
-                            Link = new Uri("https://e-learning.mgupp.ru/login/index.php")
-                        }
-                    },
-                    new MessageKeyboardButton()
-                    {
-                        Action = new MessageKeyboardButtonAction()
-                        {
-                            Type = KeyboardButtonActionType.OpenLink,
-                            Label = "Личный кабинет",
-                            Link = new Uri("https://mgupp.ru/cabinet/index.php")
-                        }
-                    }
-                },
-
-                //3я строка
-                new List<MessageKeyboardButton>()
-                {
-                    //new MessageKeyboardButton()
-                    //{
-                    //    Action = new MessageKeyboardButtonAction()
-                    //    {
-                    //        Type = KeyboardButtonActionType.Callback,
-                    //        Label = "ДЗ в ЛС",
-                    //        Payload = "{\r\n  \"button\": \"GetHW\"\r\n}"
-                    //    }
-                    //},
-                    new MessageKeyboardButton()
-                    {
-                        Action = new MessageKeyboardButtonAction()
-                        {
-                            Type = KeyboardButtonActionType.Callback,
-                          
-                            Label = "ТЕСТ(ВРЕМЯ)",
-                            Payload = "{\r\n  \"button\": \"TESTTIME\"\r\n}"
-                        }
-                    }
-                }
-            };
-        }
 
         /// <summary>
         /// Отправляет сообщение в чат
         /// </summary>
-        /// <param name="item"></param>
-        private void SendMessageChat(GroupUpdate item)
+        /// <param name="event"></param>
+        private void SendMessageChat(GroupUpdate @event)
         {
             MessagesSendParams msg = new MessagesSendParams()
             {
                 RandomId = Guid.NewGuid().GetHashCode(),
                 Message = ParserTimetable.ParserTimetable.ShowTimetableOfDay(DateTime.Now),
                 Keyboard = messageKeyboard,
-                PeerId = item.MessageEvent.PeerId
+                PeerId = @event.MessageEvent.PeerId
             };
 
-            vkClient.Messages.SendMessageEventAnswer(item.MessageEvent.EventId,
-                                                    (long)item.MessageEvent.UserId,
-                                                    (long)item.MessageEvent.PeerId,
+            vkClient.Messages.SendMessageEventAnswer(@event.MessageEvent.EventId,
+                                                    (long)@event.MessageEvent.UserId,
+                                                    (long)@event.MessageEvent.PeerId,
                                                     null);
             vkClient.Messages.Send(msg);
         }
 
-        private void SendMessageUser(GroupUpdate item)
+        private void SendMessageUser(GroupUpdate @event)
         {
             try
             {
@@ -391,10 +310,10 @@ namespace VkBotChat
                     RandomId = Guid.NewGuid().GetHashCode(),
                     Message = ParserTimetable.ParserTimetable.ShowTimetableOfDay(DateTime.Now),
                     Keyboard = messageKeyboard,
-                    PeerId = item.MessageEvent.UserId
+                    PeerId = @event.MessageEvent.UserId
                 };
 
-                switch (item.MessageEvent.Payload)
+                switch (@event.MessageEvent.Payload)
                 {
                     case "{\r\n  \"button\": \"GetHomeWork\"\r\n}":
                         msg.Message = HomeWork.HomeWorkMain.GetHomeWorksString();
@@ -405,9 +324,9 @@ namespace VkBotChat
                         break;
                 }
 
-                vkClient.Messages.SendMessageEventAnswer(item.MessageEvent.EventId,
-                                                        (long)item.MessageEvent.UserId,
-                                                        (long)item.MessageEvent.PeerId,
+                vkClient.Messages.SendMessageEventAnswer(@event.MessageEvent.EventId,
+                                                        (long)@event.MessageEvent.UserId,
+                                                        (long)@event.MessageEvent.PeerId,
                                                         null);
                 vkClient.Messages.Send(msg);
             }
