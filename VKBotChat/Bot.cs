@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using VKBotChat;
+using VKBotChat.Commands;
 using VkNet;
 using VkNet.Enums.Filters;
 using VkNet.Enums.SafetyEnums;
@@ -39,7 +40,6 @@ namespace VkBotChat
             BotKeyboardCreator botKeyboardCreator = new BotKeyboardCreator();
             messageKeyboard = botKeyboardCreator.LoadKeyboard();
             
-
             longPollServerResponse = vkClient.Groups.GetLongPollServer(config.GroupId);
             currentTs = longPollServerResponse.Ts;
         }
@@ -47,14 +47,16 @@ namespace VkBotChat
         public void Start(Action<GroupUpdate> onMessage = null)
         {
             Console.WriteLine("Запуск бота...");
+
             OnMessage += SendMessageChatGroup;
+
+            Console.WriteLine("Раздаем задачи");
 
             Task observeUpdate = new Task(OnUpdate);
             Task timerUpdate = new Task(OnTimerUpdate);
 
             observeUpdate.Start();
             timerUpdate.Start();
-
         }
 
         /// <summary>
@@ -82,38 +84,6 @@ namespace VkBotChat
                     return;
             }
             vkClient.Messages.Send(msg);
-        }
-
-        /// <summary>
-        /// Отправляет уведомление о следующем занятии
-        /// </summary>
-        /// <param name="event"></param>
-        /// <param name="payload"></param>
-        private void SendSnowSnackbar(GroupUpdate @event)
-        {
-            EventData eventData = new EventData()
-            {
-                Type = MessageEventType.SnowSnackbar
-            };
-
-            switch (@event?.MessageEvent?.Payload)
-            {
-                case "{\r\n  \"button\": \"NextLesson\"\r\n}":
-                    eventData.Text = ParserTimetable.ParserTimetable.ShowNextLesson(DateTime.Now);
-                    if (eventData.Text == string.Empty)
-                    {
-                        eventData.Text = "На сегодня занятий больше нет, отдыхайте ;)";
-                    }
-                    break;
-                default:
-                    eventData.Text = "Не понимаю :(";
-                    break;
-            }
-
-            vkClient.Messages.SendMessageEventAnswer(@event.MessageEvent.EventId,
-                                                     (long)@event.MessageEvent.UserId,
-                                                     (long)@event.MessageEvent.PeerId,
-                                                     eventData);
         }
 
         private void NotificationChat(byte typeNotification)
@@ -159,24 +129,27 @@ namespace VkBotChat
 
         private void CallbackAnswerInChat(GroupUpdate @event)
         {
+            ICommand command; 
             switch (@event?.MessageEvent?.Payload)
             {
                 //отправляет расписание на текущий день
                 case "{\r\n  \"button\": \"TimetableToday\"\r\n}":
-                    //SendMessage(item);
-                    //"{\r\n  \"button\": \"TimetableToday\"\r\n}"
-                    SendMessageUser(@event);
+                    command = new PrivateMessageCommand(@event, messageKeyboard);
+                    command.Do(vkClient);
                     break;
+
                 //присылает уведомление о следующем занятии
                 case "{\r\n  \"button\": \"NextLesson\"\r\n}":
-                    //"{\r\n  \"button\": \"NextLesson\"\r\n}"
-                    SendSnowSnackbar(@event);
+                    command = new ShowSnowSnackbar(@event);
+                    command.Do(vkClient);
                     break;
+
                 //присылает ДЗ
                 case "{\r\n  \"button\": \"GetHomeWork\"\r\n}":
-                    //"{\r\n  \"button\": \"GetHW\"\r\n}"
-                    SendMessageUser(@event);
+                    command = new PrivateMessageCommand(@event, messageKeyboard);
+                    command.Do(vkClient);
                     break;
+
                 //тест времени
                 case "{\r\n  \"button\": \"TESTTIME\"\r\n}":
                     NotificationChat(0);
@@ -276,7 +249,7 @@ namespace VkBotChat
                             continue;
                         }
 
-                        OnMessage?.Invoke(item);
+                        //OnMessage?.Invoke(item);
                         Thread.Sleep(100);
                     }
                 }
@@ -284,63 +257,5 @@ namespace VkBotChat
             }
         }
 
-
-        /// <summary>
-        /// Отправляет сообщение в чат
-        /// </summary>
-        /// <param name="event"></param>
-        private void SendMessageChat(GroupUpdate @event)
-        {
-            MessagesSendParams msg = new MessagesSendParams()
-            {
-                RandomId = Guid.NewGuid().GetHashCode(),
-                Message = ParserTimetable.ParserTimetable.ShowTimetableOfDay(DateTime.Now),
-                Keyboard = messageKeyboard,
-                PeerId = @event.MessageEvent.PeerId
-            };
-
-            vkClient.Messages.SendMessageEventAnswer(@event.MessageEvent.EventId,
-                                                    (long)@event.MessageEvent.UserId,
-                                                    (long)@event.MessageEvent.PeerId,
-                                                    null);
-            vkClient.Messages.Send(msg);
-        }
-
-        private void SendMessageUser(GroupUpdate @event)
-        {
-            try
-            {
-                MessagesSendParams msg = new MessagesSendParams()
-                {
-                    RandomId = Guid.NewGuid().GetHashCode(),
-                    Message = ParserTimetable.ParserTimetable.ShowTimetableOfDay(DateTime.Now),
-                    Keyboard = messageKeyboard,
-                    PeerId = @event.MessageEvent.UserId
-                };
-
-                switch (@event.MessageEvent.Payload)
-                {
-                    case "{\r\n  \"button\": \"GetHomeWork\"\r\n}":
-                        msg.Message = HomeWork.HomeWorkMain.GetHomeWorksString();
-                        break;
-
-                    case "{\r\n  \"button\": \"TimetableToday\"\r\n}":
-                        msg.Message = ParserTimetable.ParserTimetable.ShowTimetableOfDay(DateTime.Now);
-                        break;
-                }
-
-                vkClient.Messages.SendMessageEventAnswer(@event.MessageEvent.EventId,
-                                                        (long)@event.MessageEvent.UserId,
-                                                        (long)@event.MessageEvent.PeerId,
-                                                        null);
-                vkClient.Messages.Send(msg);
-            }
-            //могу отсутствовать права на отправку сообщений
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-
-        }
     }
 }

@@ -12,9 +12,6 @@ namespace VKBotChat
 {
     internal class BotKeyboard : MessageKeyboard
     {
-        [NonSerialized]
-        private const string PATH = "keyboard.json";
-
         public BotKeyboard() { }
 
         public void CreateKeboard()
