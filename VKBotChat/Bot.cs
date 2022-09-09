@@ -112,7 +112,7 @@ namespace VkBotChat
             _vkClient.Messages.Send(msg);
         }
 
-        private void CallbackAnswerInChat(GroupUpdate @event)
+        private void CallbackButtonsAnswerInChat(GroupUpdate @event)
         {
             Command command;
            
@@ -149,6 +149,7 @@ namespace VkBotChat
         {
             while (true)
             {
+                Console.WriteLine("On timer update");
                 byte typeNotif = IsParaTime();
                 
                 if (typeNotif != 240)
@@ -210,6 +211,7 @@ namespace VkBotChat
         {
             while (true)
             {
+                Console.WriteLine("OnUpdate");
                 var longPoll = _vkClient.Groups.GetBotsLongPollHistory(
                     new BotsLongPollHistoryParams()
                     {
@@ -219,29 +221,26 @@ namespace VkBotChat
                     }
                     );
 
-                if (OnMessage != null)
+                foreach (GroupUpdate item in longPoll.Updates)
                 {
-                    foreach (GroupUpdate item in longPoll.Updates)
+                    _currentTs = longPoll.Ts;
+
+                    if (item?.MessageEvent != null)
                     {
-                        _currentTs = longPoll.Ts;
-
-                        if (item?.MessageEvent != null)
-                        {
-                            CallbackAnswerInChat(item);
-                        }
-
-                        if (item?.Message?.Text == "кнопки")
-                        {
-                            ButtonsOn(item);
-                        }
-
-                        if (item?.Message?.RandomId != 0)
-                        {
-                            continue;
-                        }
-
-                        Thread.Sleep(100);
+                        CallbackButtonsAnswerInChat(item);
                     }
+
+                    if (item?.Message?.Text == "кнопки")
+                    {
+                        ButtonsOn(item);
+                    }
+
+                    if (item?.Message?.RandomId != 0)
+                    {
+                        continue;
+                    }
+
+                    Thread.Sleep(100);
                 }
                 Thread.Sleep(2000);
             }
