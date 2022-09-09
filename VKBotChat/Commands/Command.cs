@@ -3,7 +3,7 @@ using VkNet.Model.GroupUpdate;
 
 namespace VKBotChat.Commands
 {
-    public class Command : ICommand
+    public abstract class Command : ICommand
     {
         protected GroupUpdate Event;
 
@@ -12,9 +12,6 @@ namespace VKBotChat.Commands
             Event = @event;
         }
 
-        public virtual void Action(VkApi api)
-        {
-            throw new System.NotImplementedException();
-        }
+        public abstract void Action(VkApi api);
     }
 }

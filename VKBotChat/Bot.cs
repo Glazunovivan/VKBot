@@ -20,17 +20,17 @@ namespace VkBotChat
     {
         public event Action<GroupUpdate> OnMessage;
         
-        private VkApi vkClient;
-        private LongPollServerResponse longPollServerResponse;
-        private string currentTs;
-        private MessageKeyboard messageKeyboard;
+        private VkApi _vkClient;
+        private LongPollServerResponse _longPollServerResponse;
+        private string _currentTs;
+        private MessageKeyboard _messageKeyboard;
 
         private long? _chatID;
 
         public Bot(VkBotConfig config)
         {
-            vkClient = new VkApi();
-            vkClient.Authorize(new ApiAuthParams
+            _vkClient = new VkApi();
+            _vkClient.Authorize(new ApiAuthParams
             {
                 AccessToken = config.AccessToken,
                 Settings = Settings.All | Settings.Messages
@@ -38,10 +38,10 @@ namespace VkBotChat
             _chatID = config.ChatID;
 
             BotKeyboardCreator botKeyboardCreator = new BotKeyboardCreator();
-            messageKeyboard = botKeyboardCreator.LoadKeyboard();
+            _messageKeyboard = botKeyboardCreator.LoadKeyboard();
             
-            longPollServerResponse = vkClient.Groups.GetLongPollServer(config.GroupId);
-            currentTs = longPollServerResponse.Ts;
+            _longPollServerResponse = _vkClient.Groups.GetLongPollServer(config.GroupId);
+            _currentTs = _longPollServerResponse.Ts;
         }
 
         public void Start(Action<GroupUpdate> onMessage = null)
@@ -66,9 +66,9 @@ namespace VkBotChat
                 RandomId = Guid.NewGuid().GetHashCode(),
                 PeerId = @event.Message.PeerId,
                 Message = "Включаю кнопки",
-                Keyboard = messageKeyboard
+                Keyboard = _messageKeyboard
             };
-            vkClient.Messages.Send(msg);
+            _vkClient.Messages.Send(msg);
         }
 
         private void NotificationChat(byte typeNotification)
@@ -106,34 +106,34 @@ namespace VkBotChat
                 PeerId = _chatID,
                 RandomId = Guid.NewGuid().GetHashCode(),
                 Message = $"@all, {time} {lesson}",
-                Keyboard = messageKeyboard
+                Keyboard = _messageKeyboard
             };
 
-            vkClient.Messages.Send(msg);
+            _vkClient.Messages.Send(msg);
         }
 
         private void CallbackAnswerInChat(GroupUpdate @event)
         {
-            ICommand command;
-
+            Command command;
+           
             switch (@event?.MessageEvent?.Payload)
             {
                 //отправляет расписание на текущий день
                 case "{\r\n  \"button\": \"TimetableToday\"\r\n}":
-                    command = new PrivateMessageCommand(@event, messageKeyboard);
-                    command.Action(vkClient);
+                    command = new PrivateMessageCommand(@event, _messageKeyboard);
+                    command.Action(_vkClient);
                     break;
 
                 //присылает уведомление о следующем занятии
                 case "{\r\n  \"button\": \"NextLesson\"\r\n}":
                     command = new ShowSnowSnackbar(@event);
-                    command.Action(vkClient);
+                    command.Action(_vkClient);
                     break;
 
                 //присылает ДЗ
                 case "{\r\n  \"button\": \"GetHomeWork\"\r\n}":
-                    command = new PrivateMessageCommand(@event, messageKeyboard);
-                    command.Action(vkClient);
+                    command = new PrivateMessageCommand(@event, _messageKeyboard);
+                    command.Action(_vkClient);
                     break;
 
                 //тест времени
@@ -210,12 +210,12 @@ namespace VkBotChat
         {
             while (true)
             {
-                var longPoll = vkClient.Groups.GetBotsLongPollHistory(
+                var longPoll = _vkClient.Groups.GetBotsLongPollHistory(
                     new BotsLongPollHistoryParams()
                     {
-                        Ts = currentTs,
-                        Key = longPollServerResponse.Key,
-                        Server = longPollServerResponse.Server
+                        Ts = _currentTs,
+                        Key = _longPollServerResponse.Key,
+                        Server = _longPollServerResponse.Server
                     }
                     );
 
@@ -223,7 +223,7 @@ namespace VkBotChat
                 {
                     foreach (GroupUpdate item in longPoll.Updates)
                     {
-                        currentTs = longPoll.Ts;
+                        _currentTs = longPoll.Ts;
 
                         if (item?.MessageEvent != null)
                         {

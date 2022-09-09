@@ -11,7 +11,9 @@ namespace VKBotChat.Commands
     /// </summary>
     public class ShowSnowSnackbar :Command
     {
-        public ShowSnowSnackbar(GroupUpdate @event) : base(@event) { }
+        public ShowSnowSnackbar(GroupUpdate @event) 
+            : base(@event) 
+        { }
 
         public override void Action(VkApi api)
         {

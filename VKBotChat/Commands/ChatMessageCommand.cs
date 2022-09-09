@@ -13,14 +13,14 @@ namespace VKBotChat.Commands
     {
         private MessageKeyboard _messageKeyboard;
 
-        public ChatMessageCommand(GroupUpdate @event, MessageKeyboard messageKeyboard): base(@event) 
+        public ChatMessageCommand(GroupUpdate @event, MessageKeyboard messageKeyboard)
+            : base(@event) 
         {
             _messageKeyboard = messageKeyboard;
         }
         
         public override void Action(VkApi api)
         {
-            
             MessagesSendParams msg = new MessagesSendParams()
             {
                 RandomId = Guid.NewGuid().GetHashCode(),
