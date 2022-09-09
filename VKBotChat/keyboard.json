@@ -36,14 +36,5 @@
           }
         }
       ]
-      //[
-      //  {
-      //    "action": {
-      //      "type": "callback",
-      //      "payload": "{\r\n  \"button\": \"TESTTIME\"\r\n}",
-      //      "label": "реяр(бпелъ)"
-      //    }
-      //  }
-      //]
     ]
   }

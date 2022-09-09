@@ -12,7 +12,9 @@ namespace VKBotChat
 {
     internal class BotKeyboard : MessageKeyboard
     {
-        public BotKeyboard() { }
+        public BotKeyboard() 
+        {
+        }
 
         public void CreateKeboard()
         {
@@ -71,28 +73,28 @@ namespace VKBotChat
                 },
 
                 //3я строка
-                new List<MessageKeyboardButton>()
-                {
-                    //new MessageKeyboardButton()
-                    //{
-                    //    Action = new MessageKeyboardButtonAction()
-                    //    {
-                    //        Type = KeyboardButtonActionType.Callback,
-                    //        Label = "ДЗ в ЛС",
-                    //        Payload = "{\r\n  \"button\": \"GetHW\"\r\n}"
-                    //    }
-                    //},
-                    new MessageKeyboardButton()
-                    {
-                        Action = new MessageKeyboardButtonAction()
-                        {
-                            Type = KeyboardButtonActionType.Callback,
+                //new List<MessageKeyboardButton>()
+                //{
+                //    //new MessageKeyboardButton()
+                //    //{
+                //    //    Action = new MessageKeyboardButtonAction()
+                //    //    {
+                //    //        Type = KeyboardButtonActionType.Callback,
+                //    //        Label = "ДЗ в ЛС",
+                //    //        Payload = "{\r\n  \"button\": \"GetHW\"\r\n}"
+                //    //    }
+                //    //},
+                //    new MessageKeyboardButton()
+                //    {
+                //        Action = new MessageKeyboardButtonAction()
+                //        {
+                //            Type = KeyboardButtonActionType.Callback,
 
-                            Label = "ТЕСТ(ВРЕМЯ)",
-                            Payload = "{\r\n  \"button\": \"TESTTIME\"\r\n}"
-                        }
-                    }
-                }
+                //            Label = "ТЕСТ(ВРЕМЯ)",
+                //            Payload = "{\r\n  \"button\": \"TESTTIME\"\r\n}"
+                //        }
+                //    }
+                //}
             };
         }
     }

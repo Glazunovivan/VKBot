@@ -35,7 +35,7 @@ namespace ParserTimetable
             {
                 DayOfWeekWithLesson dayOfWeek = new DayOfWeekWithLesson();
 
-                string dayName = NameOfDay(i);
+                string dayName = Utils.Converter.NameOfDay[i];
 
                 if (j < localDays.Count)
                 {
@@ -55,36 +55,6 @@ namespace ParserTimetable
                 days.Add(dayOfWeek);
             }
             return days;
-        }
-
-        private string NameOfDay(int i)
-        {
-            string day = string.Empty;
-            switch (i)
-            {
-                case 0:
-                    day = "Понедельник";
-                    break;
-                case 1:
-                    day = "Вторник";
-                    break;
-                case 2:
-                    day = "Среда";
-                    break;
-                case 3:
-                    day = "Четверг";
-                    break;
-                case 4:
-                    day = "Пятница";
-                    break;
-                case 5:
-                    day = "Суббота";
-                    break;
-                case 6:
-                    day = "Воскресенье";
-                    break;
-            }
-            return day;
         }
 
         /// <summary>
