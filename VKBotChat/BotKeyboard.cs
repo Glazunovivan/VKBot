@@ -15,12 +15,9 @@ namespace VKBotChat
         [NonSerialized]
         private const string PATH = "keyboard.json";
 
-        public BotKeyboard() 
-        {
-            CreateKeboard();
-        }
+        public BotKeyboard() { }
 
-        private void CreateKeboard()
+        public void CreateKeboard()
         {
             Inline = false;
             OneTime = false;
@@ -100,21 +97,6 @@ namespace VKBotChat
                     }
                 }
             };
-        }
-
-        public void SaveSettings(BotKeyboard bot)
-        {
-            string str = JsonConvert.SerializeObject(bot);
-
-            File.WriteAllText(PATH, str);
-        }
-
-        public MessageKeyboard LoadKeyboardFromSetting()
-        {
-            MessageKeyboard messageKeyboard = new MessageKeyboard();
-            string str = File.ReadAllText(PATH);
-            messageKeyboard = JsonConvert.DeserializeObject<MessageKeyboard>(str);
-            return messageKeyboard;
         }
     }
 }

@@ -10,11 +10,8 @@ namespace VKBotChat
         static void Main(string[] args)
         {
             ParserTimetable.ParserTimetable.Start();
-            
-            BotKeyboard botKeyboard = new BotKeyboard();
-            botKeyboard.SaveSettings(botKeyboard);
 
-            new Bot(VkBotConfig.Instance, botKeyboard).Start();
+            new Bot(VkBotConfig.Instance).Start();
 
             Console.WriteLine("Кукусики, мы тут чат-ботимся!");
 

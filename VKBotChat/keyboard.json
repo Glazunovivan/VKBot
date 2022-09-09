@@ -1,3 +1,49 @@
-{
-
-}
+  {
+    "one_time": false,
+    "inline": false,
+    "buttons": [
+      [
+        {
+          "action": {
+            "type": "callback",
+            "payload": "{\"button\": \"TimetableToday\"}",
+            "label": "Расписание на сегодня"
+          },
+          "color": "primary"
+        },
+        {
+          "action": {
+            "type": "callback",
+            "payload": "{\"button\": \"NextLesson\"}",
+            "label": "Следующая пара"
+          },
+          "color": "primary"
+        }
+      ],
+      [
+        {
+          "action": {
+            "type": "open_link",
+            "label": "E-learning",
+            "link": "https://e-learning.mgupp.ru/login/index.php"
+          }
+        },
+        {
+          "action": {
+            "type": "open_link",
+            "label": "Личный кабинет",
+            "link": "https://mgupp.ru/cabinet/index.php"
+          }
+        }
+      ]
+      //[
+      //  {
+      //    "action": {
+      //      "type": "callback",
+      //      "payload": "{\r\n  \"button\": \"TESTTIME\"\r\n}",
+      //      "label": "ТЕСТ(ВРЕМЯ)"
+      //    }
+      //  }
+      //]
+    ]
+  }
