@@ -11,7 +11,6 @@ namespace VKBotChat.Commands
     /// </summary>
     public class NotificationMessageChatCommand : Command
     {
-        private object _vkClient;
         private MessageKeyboard _messageKeyboard;
         private long? _chatId;
 
