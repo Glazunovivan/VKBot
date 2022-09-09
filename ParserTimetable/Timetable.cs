@@ -1,9 +1,6 @@
 ﻿using Schedule;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ParserTimetable
 {
@@ -16,7 +13,7 @@ namespace ParserTimetable
         private const string _weekDateStart = "2022.09.05 00:00";
         private const string _weekDateEnd = "2022.09.11 23:59";
 
-        private struct EvenWeek
+        private class EvenWeek
         {
             public DateTime dateStart;
             public DateTime dateEnd;
@@ -81,14 +78,13 @@ namespace ParserTimetable
         /// <returns></returns>
         public string GetLessonsOrEmpty(System.DateTime dateTime)
         {
-            int day = ConvertDate(dateTime);
+            int day = Utils.Converter.ConvertDateToInt(dateTime);
 
             string result = string.Empty;
 
-            if (DayOfWeekWithLessons[day].Lessons != null)
+            if (DayOfWeekWithLessons[day].Lessons.Count > 0)
             {
                 result += $"{DayOfWeekWithLessons[day].Day}\n{GetDaysWithLessonsInLine(day)}";
-                //result += $"{GetDaysWithLessonsWriteLine(day)}";
             }
             else
             {
@@ -109,7 +105,7 @@ namespace ParserTimetable
             int minute = dateTime.Minute;
             int hour = dateTime.Hour;
 
-            int day = ConvertDate(dateTime);
+            int day = Utils.Converter.ConvertDateToInt(dateTime);
 
             DayOfWeekWithLesson currentDay = DayOfWeekWithLessons[day];
 
@@ -191,7 +187,6 @@ namespace ParserTimetable
                         {
                             break;
                         }
-                        
                     }
                     //последнее
                     else
@@ -217,28 +212,8 @@ namespace ParserTimetable
             int i = 1;
             foreach (Lesson les in dayOfWeek.Lessons)
             {
-                string currentLess = "";
-                switch (i)
-                {
-                    case 1:
-                        currentLess += "1 пара ";
-                        break;
-                    case 2:
-                        currentLess += "2 пара ";
-                        break;
-                    case 3:
-                        currentLess += "3 пара ";
-                        break;
-                    case 4:
-                        currentLess += "4 пара ";
-                        break;
-                    case 5:
-                        currentLess += "5 пара ";
-                        break;
-                    case 6:
-                        currentLess += "6 пара ";
-                        break;
-                }
+                string currentLess = ""+Utils.Converter.NameOfNumberLesson[i];
+
 
                 if (les.Name.Contains("(II)"))  //это четная неделя
                 {
@@ -278,12 +253,7 @@ namespace ParserTimetable
             var timeFrom = new TimeSpan(timeStart.Hour, timeStart.Minute, 0);
             var timeTo = new TimeSpan(timeEnd.Hour, timeEnd.Minute, 0);
 
-            if (timeNow > timeFrom && timeNow < timeTo)
-            {
-                return true;
-            }
-
-            return false;
+            return (timeNow > timeFrom && timeNow < timeTo) ? true : false;
         }
 
         private bool IsEvenWeek(DateTime dateTime)
@@ -296,37 +266,6 @@ namespace ParserTimetable
                 }
             }
             return false;
-        }
-
-        private int ConvertDate(DateTime dateTime)
-        {
-            int result = 0;
-            switch (dateTime.DayOfWeek)
-            {
-                case System.DayOfWeek.Monday:
-                    result = 0;
-                    break;
-                case System.DayOfWeek.Tuesday:
-                    result = 1;
-                    break;
-                case System.DayOfWeek.Wednesday:
-                    result = 2;
-                    break;
-                case System.DayOfWeek.Thursday:
-                    result = 3;
-                    break;
-                case System.DayOfWeek.Friday:
-                    result = 4;
-                    break;
-                case System.DayOfWeek.Saturday:
-                    result = 5;
-                    break;
-                case System.DayOfWeek.Sunday:
-                    result = 6;
-                    break;
-            }
-
-            return result;
         }
     }
 }

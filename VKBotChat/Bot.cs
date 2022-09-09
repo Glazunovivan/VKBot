@@ -13,7 +13,7 @@ using VkNet.Model.RequestParams;
 
 namespace VkBotChat
 {
-    class Bot
+    public class Bot
     {   
         private VkApi _vkClient;
         private LongPollServerResponse _longPollServerResponse;
@@ -63,6 +63,7 @@ namespace VkBotChat
                 Message = "Включаю кнопки",
                 Keyboard = _messageKeyboard
             };
+            Console.WriteLine($"{@event.Message.FromId}");
             _vkClient.Messages.Send(msg);
         }
 
@@ -80,7 +81,7 @@ namespace VkBotChat
 
                 //присылает уведомление о следующем занятии
                 case "{\r\n  \"button\": \"NextLesson\"\r\n}":
-                    command = new ShowSnowSnackbar(@event);
+                    command = new ShowSnowSnackbarCommand(@event);
                     command.Action(_vkClient);
                     break;
 
@@ -105,8 +106,6 @@ namespace VkBotChat
 
             while (true)
             {
-                Console.WriteLine("On timer update");
-                
                 notification.Action(_vkClient);
 
                 //1 раз в минуту проверка
@@ -118,7 +117,6 @@ namespace VkBotChat
         {
             while (true)
             {
-                Console.WriteLine("On check Update");
                 var longPoll = _vkClient.Groups.GetBotsLongPollHistory(
                     new BotsLongPollHistoryParams()
                     {
@@ -137,7 +135,7 @@ namespace VkBotChat
                         CallbackButtonsAnswerInChat(item);
                     }
 
-                    if (item?.Message?.Text == "кнопки")
+                    if (item?.Message?.Text == "/bot/кнопкиВкл" && item?.Message?.FromId == 139275892)
                     {
                         ButtonsOn(item);
                     }

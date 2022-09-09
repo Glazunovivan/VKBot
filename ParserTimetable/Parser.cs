@@ -1,5 +1,4 @@
-﻿using HtmlAgilityPack;
-using System;
+﻿using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Xml.Linq;
@@ -24,7 +23,7 @@ namespace ParserTimetable
 
         public List<DayOfWeekWithLesson> GetLessonsWithDays()
         {
-            List<DayOfWeekWithLesson> days = new List<DayOfWeekWithLesson>();
+            List<DayOfWeekWithLesson> days = new List<DayOfWeekWithLesson>(0);
 
             _htmlDoc = _web.Load(_url);
 
@@ -36,6 +35,8 @@ namespace ParserTimetable
                 DayOfWeekWithLesson dayOfWeek = new DayOfWeekWithLesson();
 
                 string dayName = Utils.Converter.NameOfDay[i];
+                //именуем название дня
+                dayOfWeek.Day = dayName;
 
                 if (j < localDays.Count)
                 {
@@ -50,8 +51,7 @@ namespace ParserTimetable
                         dayOfWeek.Lessons = new List<Lesson>(0);
                     }
                 }
-                //именуем название дня
-                dayOfWeek.Day = dayName;
+                
                 days.Add(dayOfWeek);
             }
             return days;
@@ -71,7 +71,7 @@ namespace ParserTimetable
 
             for (int j = 2; j <= itemCount; j++)
             {
-                string XPathLesson; 
+                //string XPathLesson; 
                 Lesson lesson = new Lesson();
 
                 //*[@id="content-tab1"]/div[1]/table/tbody/tr[2]/td[1]/div  -- это часы
@@ -79,15 +79,15 @@ namespace ParserTimetable
                 //*[@id="content-tab1"]/div[1]/table/tbody/tr[2]/td[3]/div -- аудитория
                 //*[@id="content-tab1"]/div[1]/table/tbody/tr[2]/td[4]/div -- преподаватель
 
-                XPathLesson = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[1]/div/text()";  //-время
-                var time = _htmlDoc.DocumentNode.SelectSingleNode(XPathLesson).InnerText;
+                string XPathTime = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[1]/div/text()";  //-время
+                var time = _htmlDoc.DocumentNode.SelectSingleNode(XPathTime).InnerText;
                 string[] splitTime = time.Split('-');
 
                 lesson.TimeStart = splitTime[0];
                 lesson.TimeEnd = splitTime[1];
 
-                XPathLesson = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[2]/div[1]/text()[1]"; //-название занятия
-                string nameLes = _htmlDoc.DocumentNode.SelectSingleNode(XPathLesson).InnerText;
+                string XPathLessonName = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[2]/div[1]/text()[1]"; //-название занятия
+                string nameLes = _htmlDoc.DocumentNode.SelectSingleNode(XPathLessonName).InnerText;
                 lesson.Name = nameLes;
 
                 ////*[@id="content-tab1"]/div[1]/table/tbody/tr[2]/td[2]/div[1]/text()[1]
@@ -95,28 +95,27 @@ namespace ParserTimetable
                 //XPathLesson = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[2]/div[1]/text()[1]";
 
                 //-аудитория
-                XPathLesson = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[3]/div/text()";  
-                string classroom = _htmlDoc.DocumentNode.SelectSingleNode(XPathLesson).InnerText;
+                string XPathClassroom = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[3]/div/text()";  
+                string classroom = _htmlDoc.DocumentNode.SelectSingleNode(XPathClassroom).InnerText;
                 lesson.Classroom = classroom;
 
                 //-корпус
-                XPathLesson = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[3]/div/text()[2]";  
-                classroom = _htmlDoc.DocumentNode.SelectSingleNode(XPathLesson).InnerText;
+                string XPathKorp = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[3]/div/text()[2]";  
+                classroom = _htmlDoc.DocumentNode.SelectSingleNode(XPathKorp).InnerText;
                 lesson.Classroom += " "+classroom;
 
                 //-преподаватель
-                XPathLesson = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[4]/div/text()";
-
+                string XPathLecturer = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr[{j}]/td[4]/div/text()";
                 string lecture = String.Empty;
-                var node = _htmlDoc.DocumentNode.SelectSingleNode(XPathLesson);
+                var node = _htmlDoc.DocumentNode.SelectSingleNode(XPathLecturer);
 
                 if (node != null)
                 {
-                    lecture = _htmlDoc.DocumentNode.SelectSingleNode(XPathLesson).InnerText;
+                    lecture = _htmlDoc.DocumentNode.SelectSingleNode(XPathLecturer).InnerText;
                 }
                 else
                 {
-                    lecture = " :( ";
+                    lecture = "Никто";
                 }
                 lesson.Lecturer = lecture;
 

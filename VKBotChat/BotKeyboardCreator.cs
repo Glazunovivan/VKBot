@@ -26,7 +26,7 @@ namespace VKBotChat
             else
             {
                 botKeyboard = new BotKeyboard();
-                botKeyboard.CreateKeboard();
+                botKeyboard.DefaultCreateKeboard();
 
                 SaveKeyboard(botKeyboard);
             }

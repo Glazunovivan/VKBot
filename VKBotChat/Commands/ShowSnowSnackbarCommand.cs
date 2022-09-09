@@ -9,9 +9,9 @@ namespace VKBotChat.Commands
     /// <summary>
     /// Отправляет уведомление о следующем занятии
     /// </summary>
-    public class ShowSnowSnackbar :Command
+    public class ShowSnowSnackbarCommand :Command
     {
-        public ShowSnowSnackbar(GroupUpdate @event) 
+        public ShowSnowSnackbarCommand(GroupUpdate @event) 
             : base(@event) 
         { }
 
