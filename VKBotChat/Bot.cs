@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using VKBotChat;
 using VkNet;
 using VkNet.Enums.Filters;
@@ -48,8 +49,12 @@ namespace VkBotChat
             Console.WriteLine("Запуск бота...");
             OnMessage += SendMessageChatGroup;
 
-            new Thread(OnUpdate).Start();
-            new Thread(OnTimerUpdate).Start();
+            Task observeUpdate = new Task(OnUpdate);
+            Task timerUpdate = new Task(OnTimerUpdate);
+
+            observeUpdate.Start();
+            timerUpdate.Start();
+
         }
 
         /// <summary>
