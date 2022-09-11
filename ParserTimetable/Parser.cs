@@ -31,8 +31,6 @@ namespace ParserTimetable
 
         public IEnumerable<DayOfWeekWithLesson> ParseLearningDay()
         {
-            List<DayOfWeekWithLesson> days = new List<DayOfWeekWithLesson>(0);
-
             _htmlDoc = _web.Load(_url);
 
             //учебные дни в расписании
@@ -55,7 +53,6 @@ namespace ParserTimetable
                         {
                             dayOfWeek.Lessons.Add(les);
                         }
-
                         j++;
                     }
                     else

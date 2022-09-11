@@ -1,6 +1,7 @@
 ﻿using Schedule;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ParserTimetable
 {
@@ -40,12 +41,15 @@ namespace ParserTimetable
                 _parser = new Parser();
             }
 
+            CalculateWeeks();
+
+
+            DayOfWeekWithLessons = new List<DayOfWeekWithLesson>();
             foreach (DayOfWeekWithLesson dayOfWeekWithLesson in _parser.ParseLearningDay())
             {
                 DayOfWeekWithLessons.Add(dayOfWeekWithLesson);
             }
 
-            CalculateWeeks();
         }
 
         private void CalculateWeeks()
