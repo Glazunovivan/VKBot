@@ -9,8 +9,6 @@ namespace VKBotChat
     {
         static void Main(string[] args)
         {
-            ParserTimetable.ParserTimetable.Start();
-
             new Bot(VkBotConfig.Instance).Start();
 
             Console.WriteLine("Кукусики, мы тут чат-ботимся!");
