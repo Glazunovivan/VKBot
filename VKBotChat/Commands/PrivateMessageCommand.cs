@@ -25,7 +25,7 @@ namespace VKBotChat.Commands
                 MessagesSendParams msg = new MessagesSendParams()
                 {
                     RandomId = Guid.NewGuid().GetHashCode(),
-                    Message = ParserTimetable.ParserTimetable.ShowTimetableOfDay(DateTime.Now),
+                    Message = ParserTimetable.Timetable.Instance.ShowTimetableOfDay(DateTime.Now),
                     Keyboard = _messageKeyboard,
                     PeerId = Event.MessageEvent.UserId
                 };
@@ -37,7 +37,7 @@ namespace VKBotChat.Commands
                         break;
 
                     case "{\r\n  \"button\": \"TimetableToday\"\r\n}":
-                        msg.Message = ParserTimetable.ParserTimetable.ShowTimetableOfDay(DateTime.Now);
+                        msg.Message = ParserTimetable.Timetable.Instance.ShowTimetableOfDay(DateTime.Now);
                         break;
                 }
 

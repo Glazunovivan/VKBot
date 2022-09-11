@@ -22,7 +22,7 @@ namespace VKBotChat.Commands
                 Type = MessageEventType.SnowSnackbar
             };
 
-            eventData.Text = ParserTimetable.ParserTimetable.ShowNextLesson(DateTime.Now);
+            eventData.Text = ParserTimetable.Timetable.Instance.ShowNextLesson(DateTime.Now);
             if (eventData.Text == string.Empty)
             {
                 eventData.Text = "На сегодня занятий больше нет, отдыхайте ;)";

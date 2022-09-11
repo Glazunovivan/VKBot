@@ -23,7 +23,7 @@ namespace VKBotChat.Commands
         public override void Action(VkApi api)
         {
             string time = string.Empty;
-            string lesson = ParserTimetable.ParserTimetable.ShowNextLesson(DateTime.Now);
+            string lesson = ParserTimetable.Timetable.Instance.ShowNextLesson(DateTime.Now);
             
             byte typeNotification = IsParaTime();
             

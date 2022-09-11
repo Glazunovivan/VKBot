@@ -9,6 +9,13 @@ namespace ParserTimetable
     /// </summary>
     public class Timetable
     {
+        /// <summary>
+        /// Singleton
+        /// </summary>
+        public static readonly Timetable Instance = new Timetable();
+
+        private Parser _parser;
+
         //четная
         private const string _weekDateStart = "2022.09.05 00:00";
         private const string _weekDateEnd = "2022.09.11 23:59";
@@ -24,12 +31,16 @@ namespace ParserTimetable
 
         public List<DayOfWeekWithLesson> DayOfWeekWithLessons { get; private set; }
 
-        public Timetable()
+        private Timetable()
         {
             Console.WriteLine("Загружаем расписание");
-            Parser parser = new Parser();
 
-            foreach (DayOfWeekWithLesson dayOfWeekWithLesson in parser.ParseLearningDay())
+            if (_parser == null)
+            {
+                _parser = new Parser();
+            }
+
+            foreach (DayOfWeekWithLesson dayOfWeekWithLesson in _parser.ParseLearningDay())
             {
                 DayOfWeekWithLessons.Add(dayOfWeekWithLesson);
             }
@@ -66,21 +77,11 @@ namespace ParserTimetable
         }
 
         /// <summary>
-        /// Выдает все занятия на конкретный день
-        /// </summary>
-        /// <param name="day"></param>
-        public void ShowDayWithLessons(int day)
-        {
-            Console.WriteLine($"{DayOfWeekWithLessons[day].Day}");
-            Console.WriteLine(GetDaysWithLessonsInLine(day));
-        }
-
-        /// <summary>
         /// Получаем форматированную строку с занятиями, которые зависят от передаваемого дня недели
         /// </summary>
         /// <param name="dayOfWeek"></param>
         /// <returns></returns>
-        public string GetLessonsOrEmpty(System.DateTime dateTime)
+        private string GetLessonsOrEmpty(System.DateTime dateTime)
         {
             int day = Utils.Converter.ConvertDateToInt(dateTime);
 
@@ -103,7 +104,7 @@ namespace ParserTimetable
         /// </summary>
         /// <param name="dateTime"></param>
         /// <returns></returns>
-        public string GetNextLesson(System.DateTime dateTime, bool isNotification = true)
+        private string GetNextLesson(System.DateTime dateTime, bool isNotification = true)
         {
             string result = string.Empty;
             int minute = dateTime.Minute;
@@ -270,6 +271,36 @@ namespace ParserTimetable
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        /// Выдает строку с расписанием на конкретный день
+        /// </summary>
+        /// <param name="dateTime"></param>
+        /// <returns></returns>
+        public string ShowTimetableOfDay(System.DateTime dateTime)
+        {
+            return GetLessonsOrEmpty(dateTime);
+        }
+
+        /// <summary>
+        /// Показывает следующее занятие
+        /// </summary>
+        /// <param name="dateTime"></param>
+        /// <returns></returns>
+        public string ShowNextLesson(System.DateTime dateTime)
+        {
+            return GetNextLesson(dateTime);
+        }
+
+        /// <summary>
+        /// Выдает все занятия на конкретный день
+        /// </summary>
+        /// <param name="day"></param>
+        public void ShowDayWithLessons(int day)
+        {
+            Console.WriteLine($"{DayOfWeekWithLessons[day].Day}");
+            Console.WriteLine(GetDaysWithLessonsInLine(day));
         }
     }
 }
