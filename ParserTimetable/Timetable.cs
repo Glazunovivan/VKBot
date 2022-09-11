@@ -24,11 +24,15 @@ namespace ParserTimetable
 
         public List<DayOfWeekWithLesson> DayOfWeekWithLessons { get; private set; }
 
-        public Timetable(string url)
+        public Timetable()
         {
             Console.WriteLine("Загружаем расписание");
-            Parser parser = new Parser(url);
-            DayOfWeekWithLessons = parser.GetLessonsWithDays();
+            Parser parser = new Parser();
+
+            foreach (DayOfWeekWithLesson dayOfWeekWithLesson in parser.ParseLearningDay())
+            {
+                DayOfWeekWithLessons.Add(dayOfWeekWithLesson);
+            }
 
             CalculateWeeks();
         }

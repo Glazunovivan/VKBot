@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Xml.Linq;
 using System.Net;
 using Schedule;
+using System.IO;
 
 namespace ParserTimetable
 {
@@ -11,17 +12,24 @@ namespace ParserTimetable
     {
         private HtmlAgilityPack.HtmlDocument _htmlDoc;
         private HtmlAgilityPack.HtmlWeb _web;
-        
+
+        private const string PATH = "url.json";
         private string _url;
 
-        public Parser(string url)
+        public Parser()
         {
-            _url = url;
+            if (!File.Exists(PATH))
+            {
+                Console.WriteLine($"Файл настроек {PATH} не найден. Завершаем работу");
+                return;
+            }
+            _url = @"" + File.ReadAllText(PATH);
+
             _web = new HtmlAgilityPack.HtmlWeb();
             _htmlDoc = new HtmlAgilityPack.HtmlDocument();
         }
 
-        public List<DayOfWeekWithLesson> GetLessonsWithDays()
+        public IEnumerable<DayOfWeekWithLesson> ParseLearningDay()
         {
             List<DayOfWeekWithLesson> days = new List<DayOfWeekWithLesson>(0);
 
@@ -43,7 +51,11 @@ namespace ParserTimetable
                     if (dayName == localDays[j].InnerText)
                     {
                         //загружаем занятия на день
-                        dayOfWeek.Lessons = LoadLessons(j+1);
+                        foreach (Lesson les in ParseLesson(j+1))
+                        {
+                            dayOfWeek.Lessons.Add(les);
+                        }
+
                         j++;
                     }
                     else
@@ -51,10 +63,9 @@ namespace ParserTimetable
                         dayOfWeek.Lessons = new List<Lesson>(0);
                     }
                 }
-                
-                days.Add(dayOfWeek);
+
+                yield return dayOfWeek;
             }
-            return days;
         }
 
         /// <summary>
@@ -62,10 +73,8 @@ namespace ParserTimetable
         /// </summary>
         /// <param name="day"></param>
         /// <returns></returns>
-        private List<Lesson> LoadLessons(int day)
+        private IEnumerable<Lesson> ParseLesson(int day)
         {
-            List<Lesson> lessons = new List<Lesson>();
-           
             string XPathInDay = $"//*[@id=\"content-tab1\"]/div[{day}]/table/tr";
             int itemCount = _htmlDoc.DocumentNode.SelectNodes(XPathInDay).Count;
 
@@ -122,10 +131,8 @@ namespace ParserTimetable
                 //загружаем ссылку на занятие
                 //lesson.Link = GetLinkInLesson(nameLes);
 
-                lessons.Add(lesson);
+                yield return lesson;
             }
-
-            return lessons;
         }
 
         private List<LinkRemoteLesson> LoadLinks()

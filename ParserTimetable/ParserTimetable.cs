@@ -15,17 +15,9 @@ namespace ParserTimetable
 
         public static void Start()
         {
-            if (!File.Exists(PATH))
-            {
-                Console.WriteLine($"Файл настроек {PATH} не найден");
-                return;
-            }
-
-            string url = @""+File.ReadAllText(PATH);
-
             Console.WriteLine("Запускаем парсер...");
        
-            _timetable = new Timetable(url);
+            _timetable = new Timetable();
             Console.WriteLine("Парсер работает :)");
         }
 
